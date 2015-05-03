@@ -3,7 +3,7 @@ Contributors: smp7, wp.insider
 Donate link: https://simple-membership-plugin.com/
 Tags: login, redirection, member, members, membership, login redirection, access, level
 Requires at least: 3.8
-Tested up to: 3.9
+Tested up to: 4.2
 Stable tag: 1.0
 License: GPLv2 or later
 
@@ -31,6 +31,9 @@ None
 None
 
 == Changelog ==
+
+= 1.1 =
+* Moved the after login redirection action inside the plugins_loaded hook
 
 = 1.0 =
 * First commit to wordpress.org
