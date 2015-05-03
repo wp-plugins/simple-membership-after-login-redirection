@@ -1,7 +1,7 @@
 <?php
 /*
   Plugin Name: Simple Membership After Login Redirection
-  Version: v1.0
+  Version: v1.1
   Plugin URI: https://simple-membership-plugin.com/
   Author: smp7, wp.insider
   Author URI: https://simple-membership-plugin.com/
@@ -13,14 +13,14 @@ if (!defined('ABSPATH'))
 
 define('SWPM_ALR_CONTEXT', 'swpm_alr');
 
-add_action('init', 'swpm_alr_addon_init');
-add_action('swpm_after_login', 'swpm_alr_do_after_login_redirection');
+add_action('plugins_loaded', 'swpm_alr_addon_init');
 
 function swpm_alr_addon_init() {
     if (!class_exists('SimpleWpMembership')) {
         return;
     }
-
+    add_action('swpm_after_login', 'swpm_alr_do_after_login_redirection');
+    add_filter('swpm_after_login_url', 'swpm_after_login_url');
     if (is_admin()) {//Do admin side stuff
         add_filter('swpm_admin_add_membership_level_ui', 'swpm_alr_admin_add_membership_level_ui');
         add_filter('swpm_admin_edit_membership_level_ui', 'swpm_alr_admin_edit_membership_level_ui', 10, 2);
@@ -95,4 +95,17 @@ function swpm_alr_do_after_login_redirection() {
             exit;
         }
     }
+}
+function swpm_after_login_url($url){
+    $auth = BAuth::get_instance();
+    if ($auth->is_logged_in()) {
+        $level = $auth->get('membership_level');
+        $level_id = $level;
+        $key = 'swpm_alr_after_login_page_field';
+        $after_login_page_url = BMembershipLevelCustom::get_value_by_key($level_id, $key);
+        if(!empty($after_login_page_url)){
+            return $after_login_page_url;
+        }
+    }
+    return $url;
 }
