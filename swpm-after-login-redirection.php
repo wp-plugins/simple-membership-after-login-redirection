@@ -1,34 +1,27 @@
 <?php
+
 /*
   Plugin Name: Simple Membership After Login Redirection
-  Version: v1.1
+  Version: v1.2
   Plugin URI: https://simple-membership-plugin.com/
   Author: smp7, wp.insider
   Author URI: https://simple-membership-plugin.com/
   Description: An addon for the simple membership plugin to do the after login redirection to a specific page based on the member's level.
-*/
+ */
 
 if (!defined('ABSPATH'))
     exit; //Exit if accessed directly
 
 define('SWPM_ALR_CONTEXT', 'swpm_alr');
 
-add_action('plugins_loaded', 'swpm_alr_addon_init');
+add_action('swpm_after_login', 'swpm_alr_do_after_login_redirection');
+add_filter('swpm_after_login_url', 'swpm_after_login_url');
+if (is_admin()) {//Do admin side stuff
+    add_filter('swpm_admin_add_membership_level_ui', 'swpm_alr_admin_add_membership_level_ui');
+    add_filter('swpm_admin_edit_membership_level_ui', 'swpm_alr_admin_edit_membership_level_ui', 10, 2);
 
-function swpm_alr_addon_init() {
-    if (!class_exists('SimpleWpMembership')) {
-        return;
-    }
-    add_action('swpm_after_login', 'swpm_alr_do_after_login_redirection');
-    add_filter('swpm_after_login_url', 'swpm_after_login_url');
-    if (is_admin()) {//Do admin side stuff
-        add_filter('swpm_admin_add_membership_level_ui', 'swpm_alr_admin_add_membership_level_ui');
-        add_filter('swpm_admin_edit_membership_level_ui', 'swpm_alr_admin_edit_membership_level_ui', 10, 2);
-
-        add_filter('swpm_admin_add_membership_level', 'swpm_alr_admin_add_membership_level');
-        add_filter('swpm_admin_edit_membership_level', 'swpm_alr_admin_edit_membership_level', 10, 2);
-    } else {//Do front end stuff
-    }
+    add_filter('swpm_admin_add_membership_level', 'swpm_alr_admin_add_membership_level');
+    add_filter('swpm_admin_edit_membership_level', 'swpm_alr_admin_edit_membership_level', 10, 2);
 }
 
 function swpm_alr_admin_add_membership_level_ui($to_filter) {
@@ -42,7 +35,7 @@ function swpm_alr_admin_add_membership_level_ui($to_filter) {
 }
 
 function swpm_alr_admin_edit_membership_level_ui($to_filter, $id) {
-    $fields = BMembershipLevelCustom::get_value_by_context($id, SWPM_ALR_CONTEXT);
+    $fields = SwpmMembershipLevelCustom::get_value_by_context($id, SWPM_ALR_CONTEXT);
     $swpm_alr_after_login_page_field = isset($fields['swpm_alr_after_login_page_field']) ? $fields['swpm_alr_after_login_page_field']['meta_value'] : '';
     return $to_filter . '<tr>
             <th scope="row">After Login Redirection Page</th>
@@ -80,30 +73,31 @@ function swpm_alr_admin_edit_membership_level($to_filter, $id) {
 }
 
 function swpm_alr_do_after_login_redirection() {
-    if(class_exists('BLog')){
-        Blog::log_simple_debug("After login redirection addon. Checking if member need to be redirected.",true);
+    if (class_exists('BLog')) {
+        SwpmLog::log_simple_debug("After login redirection addon. Checking if member need to be redirected.", true);
     }
 
-    $auth = BAuth::get_instance();
+    $auth = SwpmAuth::get_instance();
     if ($auth->is_logged_in()) {
         $level = $auth->get('membership_level');
         $level_id = $level;
         $key = 'swpm_alr_after_login_page_field';
-        $after_login_page_url = BMembershipLevelCustom::get_value_by_key($level_id, $key);
-        if(!empty($after_login_page_url)){
+        $after_login_page_url = SwpmMembershipLevelCustom::get_value_by_key($level_id, $key);
+        if (!empty($after_login_page_url)) {
             wp_redirect($after_login_page_url);
             exit;
         }
     }
 }
-function swpm_after_login_url($url){
-    $auth = BAuth::get_instance();
+
+function swpm_after_login_url($url) {
+    $auth = SwpmAuth::get_instance();
     if ($auth->is_logged_in()) {
         $level = $auth->get('membership_level');
         $level_id = $level;
         $key = 'swpm_alr_after_login_page_field';
-        $after_login_page_url = BMembershipLevelCustom::get_value_by_key($level_id, $key);
-        if(!empty($after_login_page_url)){
+        $after_login_page_url = SwpmMembershipLevelCustom::get_value_by_key($level_id, $key);
+        if (!empty($after_login_page_url)) {
             return $after_login_page_url;
         }
     }

@@ -4,7 +4,7 @@ Donate link: https://simple-membership-plugin.com/
 Tags: login, redirection, member, members, membership, login redirection, access, level
 Requires at least: 3.8
 Tested up to: 4.2
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 
 An addon for the simple membership plugin to configure after login redirection to a specific page based on the member's level.
@@ -31,6 +31,9 @@ None
 None
 
 == Changelog ==
+
+= 1.2 =
+* Registering the actions and hooks earlier so they don't have a race condition on some sites.
 
 = 1.1 =
 * Moved the after login redirection action inside the plugins_loaded hook
